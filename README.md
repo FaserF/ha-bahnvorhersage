@@ -1,9 +1,11 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-CUSTOM-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
 # Bahnvorhersage Homeassistant Sensor
+WORK IN PROGRESS! NOT WORKING YET!
+
 The `bahnvorhersage` sensor will give you the prediction departure time of the next trains for the given start & destination combination, containing many more attribute informations.
 
-This integration works great side-by-side with [ha-bahnvorhersage](https://github.com/FaserF/ha-bahnvorhersage).
+This integration works great side-by-side with [ha-db_infoscreen](https://github.com/FaserF/ha-db_infoscreen).
 This is a superior to [ha-deutschebahn](https://github.com/FaserF/ha-deutschebahn).
 
 ## Installation
@@ -34,28 +36,121 @@ Go to Configuration -> Integrations and click on "add integration". Then search 
 [![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=bahnvorhersage)
 
 ### Configuration Variables
-- **station**: The name of the station
+tbd
 
 ### JSON Format
 The API returns data in the following json format usually:
 
 ```json
-{
-  "departures": [
-    {
-      "scheduledArrival": "08:08",
-      "destination": "München-Pasing",
-      "train": "S 4",
-      "platform": "4",
-      "delayArrival": 18,
-      "messages": {
-        "delay": [
-          {"text": "delay of a train ahead", "timestamp": "2025-01-21T07:53:00"}
-        ]
-      }
-    }
-  ]
-}
+[{
+    "legs": [{
+        "origin": {
+            "id": "1234567",
+            "name": "Start",
+            "location": {
+                "id": "1234567",
+                "latitude": 12.345678,
+                "longitude": 12.345678
+            },
+            "products": null,
+            "type": "station"
+        },
+        "destination": {
+            "id": "1234567",
+            "name": "Destination",
+            "location": {
+                "id": "1234567",
+                "latitude": 12.345678,
+                "longitude": 12.345678
+            },
+            "products": null,
+            "type": "station"
+        },
+        "departure": "2025-01-25T12:02:00+01:00",
+        "departurePlatform": "5",
+        "arrival": "2025-01-25T13:04:00+01:00",
+        "arrivalPlatform": "3",
+        "cancelled": false,
+        "direction": "München-Pasing",
+        "stopovers": [{
+            "stop": {
+                "id": "1234567",
+                "name": "Zorneding",
+                "location": {
+                    "id": "1234567",
+                    "latitude": 12.345678,
+                    "longitude": 12.345678
+                },
+                "products": null,
+                "type": "station"
+            },
+            "arrival": null,
+            "plannedArrival": null,
+            "arrivalPlatform": "5",
+            "departure": "2025-01-25T12:02:00+01:00",
+            "plannedDeparture": "2025-01-25T12:02:00+01:00",
+            "departurePlatform": "5",
+            "cancelled": false,
+            "type": "stopover"
+        }, 
+        [...]
+        {
+            "stop": {
+                "id": "1234567",
+                "name": "Starnberg",
+                "location": {
+                    "id": "1234567",
+                    "latitude": 12.345678,
+                    "longitude": 12.345678
+                },
+                "products": null,
+                "type": "station"
+            },
+            "arrival": "2025-01-25T14:04:00+01:00",
+            "plannedArrival": "2025-01-25T14:04:00+01:00",
+            "arrivalPlatform": "3",
+            "departure": null,
+            "plannedDeparture": null,
+            "departurePlatform": "3",
+            "cancelled": false,
+            "type": "stopover"
+        }],
+        "plannedDeparture": "2025-01-25T13:02:00+01:00",
+        "plannedDeparturePlatform": "5",
+        "departureDelayPrediction": {
+            "predictions": [0.00047, 0.00084, 0.00777, 0.32811, 0.29321, 0.12286, 0.05807, 0.04459, 0.03696, 0.02058, 0.01624, 0.01396, 0.01007, 0.00752, 0.00457, 0.00473, 0.00366, 0.00221, 0.00247, 0.00234, 0.00293, 0.00199, 0.00233, 0.00223, 0.00122, 0.00194, 0.00125, 0.00071, 0.00074, 0.00069, 0.00047, 0.0005, 0.00127, 0.0005],
+            "offset": 3,
+            "type": "delayPrediction"
+        },
+        "plannedArrival": "2025-01-25T14:04:00+01:00",
+        "plannedArrivalPlatform": "3",
+        "arrivalDelayPrediction": {
+            "predictions": [0.00043, 0.00112, 0.01883, 0.20492, 0.12529, 0.10636, 0.08477, 0.06242, 0.05973, 0.02657, 0.02752, 0.02364, 0.01864, 0.01251, 0.00584, 0.01028, 0.01035, 0.00974, 0.00533, 0.00509, 0.00918, 0.0388, 0.02247, 0.0193, 0.04173, 0.02942, 0.00706, 0.00305, 0.00247, 0.00305, 0.00129, 0.00099, 0.00127, 0.00053],
+            "offset": 3,
+            "type": "delayPrediction"
+        },
+        "line": {
+            "id": "s-6662",
+            "name": "S 1",
+            "operator": {
+                "type": "operator",
+                "id": "db-regio-ag-s-bahn-munchen",
+                "name": "DB Regio AG S-Bahn München"
+            },
+            "isRegio": true,
+            "productName": "S",
+            "mode": "train",
+            "fahrtNr": "6662",
+            "adminCode": "800725",
+            "type": "line"
+        },
+        "tripId": "2|#VN#1#ST#1737574886#PI#",
+        "type": "leg"
+    }],
+    "price": null,
+    "refreshToken": "1234###",
+    "type": "journey"
+}]
 ```
 
 ## Bug reporting
