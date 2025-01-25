@@ -1,0 +1,68 @@
+{
+  "title": "DB Infoscreen",
+  "config": {
+      "step": {
+          "user": {
+              "title": "DB Infoscreen Konfiguration",
+              "description": "Bitte geben Sie die Details der Verbindung an.",
+              "data": {
+                  "start_station": "Startbahnhof",
+                  "destination_station": "Zielbahnhof",
+                  "search_for_arrival": "Suche nach Ankunftszeit",
+                  "only_regional": "Nur Regionalzüge verwenden",
+                  "bike": "Fahrradmitnahme anzeigen",
+                  "update_interval": "Aktualisierungsintervall (Minuten)"
+              }
+          }
+      },
+      "error": {
+          "invalid_station": "Ungültiger Bahnhof angegeben.",
+          "api_error": "Fehler beim Abrufen der Daten von der API.",
+          "max_sensors_reached": "Maximale Anzahl von Sensoren erreicht."
+      },
+      "abort": {
+          "already_configured": "Diese Verbindung ist bereits konfiguriert.",
+          "invalid_configuration": "Die Konfiguration ist ungültig."
+      }
+  },
+  "options": {
+      "step": {
+          "init": {
+              "title": "Optionen bearbeiten",
+              "description": "Passen Sie die Optionen für diese Verbindung an.",
+              "data": {
+                  "search_for_arrival": "Suche nach Ankunftszeit",
+                  "only_regional": "Nur Regionalzüge verwenden",
+                  "bike": "Fahrradmitnahme anzeigen",
+                  "update_interval": "Aktualisierungsintervall (Minuten)"
+              }
+          }
+      }
+  },
+  "device_automation": {
+      "trigger_type": {
+          "departure_soon": "Zug fährt bald ab",
+          "arrival_soon": "Zug kommt bald an"
+      }
+  },
+  "entity": {
+      "sensor": {
+          "journey": {
+              "name": "Verbindung {start_station} → {destination_station}",
+              "state": {
+                  "no_data": "Keine Daten verfügbar",
+                  "incomplete_data": "Unvollständige Daten",
+                  "error": "Fehler"
+              },
+              "attributes": {
+                  "start_station": "Startbahnhof",
+                  "destination_station": "Zielbahnhof",
+                  "departure_time": "Abfahrtszeit",
+                  "arrival_time": "Ankunftszeit",
+                  "total_journeys": "Anzahl der Verbindungen",
+                  "last_update": "Letzte Aktualisierung"
+              }
+          }
+      }
+  }
+}

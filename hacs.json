@@ -1,0 +1,5 @@
+{
+    "name": "Bahnvorhersage",
+    "render_readme": true,
+    "country": ["DE"]
+}

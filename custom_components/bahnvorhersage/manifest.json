@@ -1,0 +1,13 @@
+{
+  "domain": "bahnvorhersage",
+  "name": "Bahnvorhersage",
+  "codeowners": [
+    "@faserf"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/faserf/ha-bahnvorhersage#readme",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/faserf/ha-bahnvorhersage/issues",
+  "requirements": [],
+  "version": "2025.01.0"
+}
