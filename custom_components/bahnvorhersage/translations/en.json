@@ -1,68 +1,83 @@
 {
-  "title": "Bahnvorhersage",
-  "config": {
-      "step": {
-          "user": {
-              "title": "Bahnvorhersage Configuration",
-              "description": "Please provide the connection details.",
-              "data": {
-                  "start_station": "Start station",
-                  "destination_station": "Destination station",
-                  "search_for_arrival": "Search for arrival time",
-                  "only_regional": "Use only regional trains",
-                  "bike": "Show bike allowance",
-                  "update_interval": "Update interval (minutes)"
-              }
-          }
-      },
-      "error": {
-          "invalid_station": "Invalid station provided.",
-          "api_error": "Error fetching data from the API.",
-          "max_sensors_reached": "Maximum number of sensors reached."
-      },
-      "abort": {
-          "already_configured": "This connection is already configured.",
-          "invalid_configuration": "The configuration is invalid."
-      }
-  },
-  "options": {
-      "step": {
-          "init": {
-              "title": "Edit Options",
-              "description": "Adjust the options for this connection.",
-              "data": {
-                  "search_for_arrival": "Search for arrival time",
-                  "only_regional": "Use only regional trains",
-                  "bike": "Show bike allowance",
-                  "update_interval": "Update interval (minutes)"
-              }
-          }
-      }
-  },
-  "device_automation": {
-      "trigger_type": {
-          "departure_soon": "Train departing soon",
-          "arrival_soon": "Train arriving soon"
-      }
-  },
-  "entity": {
-      "sensor": {
-          "journey": {
-              "name": "Journey {start_station} → {destination_station}",
-              "state": {
-                  "no_data": "No data available",
-                  "incomplete_data": "Incomplete data",
-                  "error": "Error"
-              },
-              "attributes": {
-                  "start_station": "Start station",
-                  "destination_station": "Destination station",
-                  "departure_time": "Departure time",
-                  "arrival_time": "Arrival time",
-                  "total_journeys": "Total journeys",
-                  "last_update": "Last update"
-              }
-          }
-      }
-  }
+    "title": "Bahnvorhersage",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Bahnvorhersage Configuration",
+                "description": "Please provide the connection details.",
+                "data": {
+                    "start_station": "Start station",
+                    "destination_station": "Destination station",
+                    "search_for_arrival": "Search for arrival time",
+                    "only_regional": "Use only regional trains",
+                    "bike": "Show bike allowance",
+                    "update_interval": "Update interval (minutes)",
+                    "next_departures": "Number of next departures",
+                    "hidelowdelay": "Hide trains with low delay",
+                    "drop_late_trains": "Drop late trains",
+                    "offset": "Time offset",
+                    "ignored_train_types": "Ignored train types"
+                }
+            }
+        },
+        "error": {
+            "invalid_station": "Invalid station provided.",
+            "api_error": "Error fetching data from the API.",
+            "max_sensors_reached": "Maximum number of sensors reached."
+        },
+        "abort": {
+            "already_configured": "This connection is already configured.",
+            "invalid_configuration": "The configuration is invalid."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Edit Options",
+                "description": "Adjust the options for this connection.",
+                "data": {
+                    "search_for_arrival": "Search for arrival time",
+                    "only_regional": "Use only regional trains",
+                    "bike": "Show bike allowance",
+                    "update_interval": "Update interval (minutes)",
+                    "next_departures": "Number of next departures",
+                    "hidelowdelay": "Hide trains with low delay",
+                    "drop_late_trains": "Drop late trains",
+                    "offset": "Time offset",
+                    "ignored_train_types": "Ignored train types"
+                }
+            }
+        }
+    },
+    "device_automation": {
+        "trigger_type": {
+            "departure_soon": "Train departing soon",
+            "arrival_soon": "Train arriving soon"
+        }
+    },
+    "entity": {
+        "sensor": {
+            "journey": {
+                "name": "Journey {start_station} → {destination_station}",
+                "state": {
+                    "no_data": "No data available",
+                    "incomplete_data": "Incomplete data",
+                    "error": "Error"
+                },
+                "attributes": {
+                    "start_station": "Start station",
+                    "destination_station": "Destination station",
+                    "departure_time": "Departure time",
+                    "arrival_time": "Arrival time",
+                    "total_journeys": "Total journeys",
+                    "last_update": "Last update",
+                    "next_departures": "Number of next departures",
+                    "hidelowdelay": "Hide trains with low delay",
+                    "drop_late_trains": "Drop late trains",
+                    "offset": "Time offset",
+                    "ignored_train_types": "Ignored train types"
+                }
+            }
+        }
+    }
 }

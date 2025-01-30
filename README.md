@@ -36,7 +36,20 @@ Go to Configuration -> Integrations and click on "add integration". Then search 
 [![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=bahnvorhersage)
 
 ### Configuration Variables
-tbd
+
+| Key                        | Type    | Required | Default | Description |
+|----------------------------|---------|----------|---------|-------------|
+| `start_station`            | string  | Yes      | -       | The starting station |
+| `destination_station`      | string  | Yes      | -       | The destination station |
+| `next_departures`         | int     | No       | 5       | Number of upcoming departures to show |
+| `update_interval`          | int     | No       | 60      | Update interval in seconds |
+| `hide_low_delay`           | boolean | No       | False   | Hide trains with low delays |
+| `drop_late_trains`         | boolean | No       | False   | Exclude very late trains |
+| `search_for_arrival`       | boolean | No       | False   | Search for arrival times instead of departure times |
+| `only_regional`            | boolean | No       | False   | Only show regional trains |
+| `bike`                     | boolean | No       | False   | Show bike-friendly trains |
+| `offset`                   | string  | No       | 0       | Time offset for departure search |
+| `ignored_traintypes`       | list    | No       | []      | List of train types to ignore |
 
 ### JSON Format
 The API returns data in the following json format usually:
@@ -92,7 +105,7 @@ The API returns data in the following json format usually:
             "departurePlatform": "5",
             "cancelled": false,
             "type": "stopover"
-        }, 
+        },
         [...]
         {
             "stop": {
