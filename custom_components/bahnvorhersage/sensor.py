@@ -1,7 +1,7 @@
 from homeassistant.components.sensor import SensorEntity
 from .const import DOMAIN
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,30 +40,28 @@ class DBInfoSensor(SensorEntity):
     @property
     def native_value(self):
         if self.coordinator.data:
-            departure_time = (
-                self.coordinator.data[0].get("departure", "No Data")
-            )
-            delay_departure_prediction = self.coordinator.data[0].get("departureDelayPrediction")
+            # Log the data structure to ensure it's what we expect
+            _LOGGER.debug("Data received for station: %s to destination: %s", self.start_station, self.destination_station)
             
-            if delay_departure_prediction:
-                delay_departure = delay_departure_prediction.get("offset", 0)
+            # Ensure we have legs in the data and then access the first departure
+            if 'legs' in self.coordinator.data[0]:
+                legs = self.coordinator.data[0]['legs']
+                if legs:
+                    departure_time = legs[0].get("departure", "Unknown")
+                    if departure_time == "Unknown":
+                        _LOGGER.warning("Departure time not found in the first leg for station: %s to destination: %s", self.start_station, self.destination_station)
+                    else:
+                        _LOGGER.debug("Departure time found: %s", departure_time)
+                    return departure_time
+                else:
+                    _LOGGER.warning("No legs found in data for station: %s to destination: %s", self.start_station, self.destination_station)
             else:
-                delay_departure = 0
-
-            if isinstance(departure_time, int):  # Unix timestamp case
-                departure_time = datetime.fromtimestamp(departure_time)
-
-            if delay_departure == 0:
-                _LOGGER.debug("Sensor state updated: %s", departure_time)
-                return departure_time
-            else:
-                departure_time_with_delay = departure_time + timedelta(minutes=delay_departure)
-                departure_time_with_delay_str = f"{departure_time_with_delay} +{delay_departure}"
-                _LOGGER.debug("Sensor state updated with delay: %s", departure_time_with_delay_str)
-                return departure_time_with_delay_str
+                _LOGGER.warning("No 'legs' data found in response for station: %s to destination: %s", self.start_station, self.destination_station)
+            
         else:
             _LOGGER.warning("No data received for station: %s to destination: %s", self.start_station, self.destination_station)
-            return "No Data"
+            
+        return "No Data"
 
     @property
     def extra_state_attributes(self):
@@ -71,8 +69,11 @@ class DBInfoSensor(SensorEntity):
 
         next_departures = self.coordinator.data or []
         for departure in next_departures:
-            if 'departure' in departure and isinstance(departure['departure'], int):
-                departure['departure'] = datetime.fromtimestamp(departure['departure']).strftime('%Y-%m-%d %H:%M:%S')
+            if 'departure' in departure and isinstance(departure['departure'], str):
+                try:
+                    departure['departure'] = datetime.fromisoformat(departure['departure']).strftime('%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    _LOGGER.warning("Invalid departure time format: %s", departure['departure'])
 
         last_updated = getattr(self.coordinator, "last_update", None)
         if last_updated:

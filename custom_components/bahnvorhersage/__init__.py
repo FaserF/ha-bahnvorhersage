@@ -111,6 +111,8 @@ class BVCoordinator(DataUpdateCoordinator):
                     for departure in data.get("legs", []):
                         _LOGGER.debug("Processing departure: %s", departure)
                         json_size = len(json.dumps(filtered_departures))
+                        
+                        # Check if the filtered departures JSON size exceeds the limit
                         if json_size > MAX_SIZE_BYTES:
                             _LOGGER.info("Filtered departures JSON size exceeds limit: %d bytes for entry: %s . Ignoring some future departures to keep the size lower.", json_size, self.start_station)
                             break
@@ -137,7 +139,7 @@ class BVCoordinator(DataUpdateCoordinator):
                             _LOGGER.debug("Departure time without added delay: %s", departure_time)
                             delay_departure = 0  # Default delay if not available
 
-                            # Sicherstellen, dass delay_departure_prediction nicht None ist
+                            # Ensure departureDelayPrediction is not None
                             if "departureDelayPrediction" in departure and departure["departureDelayPrediction"]:
                                 delay_departure_prediction = departure["departureDelayPrediction"]
                                 delay_departure = delay_departure_prediction.get("offset", 0)
