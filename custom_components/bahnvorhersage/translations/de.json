@@ -63,19 +63,6 @@
                     "no_data": "Keine Daten verfügbar",
                     "incomplete_data": "Unvollständige Daten",
                     "error": "Fehler"
-                },
-                "attributes": {
-                    "start_station": "Startbahnhof",
-                    "destination_station": "Zielbahnhof",
-                    "departure_time": "Abfahrtszeit",
-                    "arrival_time": "Ankunftszeit",
-                    "total_journeys": "Gesamtanzahl der Reisen",
-                    "last_update": "Letzte Aktualisierung",
-                    "next_departures": "Anzahl der nächsten Abfahrten",
-                    "hidelowdelay": "Züge mit geringer Verspätung ausblenden",
-                    "drop_late_trains": "Verspätete Züge ausblenden",
-                    "offset": "Zeitversatz",
-                    "ignored_train_types": "Ignorierte Zugtypen"
                 }
             }
         }

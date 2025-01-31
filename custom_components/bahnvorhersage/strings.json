@@ -63,19 +63,6 @@
                     "no_data": "No data available",
                     "incomplete_data": "Incomplete data",
                     "error": "Error"
-                },
-                "attributes": {
-                    "start_station": "Start station",
-                    "destination_station": "Destination station",
-                    "departure_time": "Departure time",
-                    "arrival_time": "Arrival time",
-                    "total_journeys": "Total journeys",
-                    "last_update": "Last update",
-                    "next_departures": "Number of next departures",
-                    "hidelowdelay": "Hide trains with low delay",
-                    "drop_late_trains": "Drop late trains",
-                    "offset": "Time offset",
-                    "ignored_train_types": "Ignored train types"
                 }
             }
         }
