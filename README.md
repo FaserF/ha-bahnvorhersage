@@ -1,12 +1,14 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-CUSTOM-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
 # Bahnvorhersage Homeassistant Sensor
-WORK IN PROGRESS! NOT WORKING YET!
-
 The `bahnvorhersage` sensor will give you the prediction departure time of the next trains for the given start & destination combination, containing many more attribute informations.
 
 This integration works great side-by-side with [ha-db_infoscreen](https://github.com/FaserF/ha-db_infoscreen). 
 This is a superior to [ha-deutschebahn](https://github.com/FaserF/ha-deutschebahn).
+
+<img src="https://gitlab.com/bahnvorhersage/bahnvorhersage_frontend/-/raw/main/public/img/icons/android-chrome-512x512.png" alt="Logo" width="300px">
+
+<img src="images/sensor.png" alt="Station Sensor" width="300px">
 
 ## Installation
 ### 1. Using HACS (recommended way)
