@@ -93,7 +93,7 @@ class BVCoordinator(DataUpdateCoordinator):
                     if response.status == 200:
                         result = await response.json()
                         _LOGGER.debug("API response: %s", result)
-                        
+
                         filtered_departures = []
                         ignored_train_types = self.ignored_train_types
                         if ignored_train_types:
@@ -109,7 +109,7 @@ class BVCoordinator(DataUpdateCoordinator):
 
                                 _LOGGER.debug("Processing departure: %s", departure)
                                 json_size = len(json.dumps(filtered_departures))
-                                
+
                                 # Check if the filtered departures JSON size exceeds the limit
                                 if json_size > MAX_SIZE_BYTES:
                                     _LOGGER.info("Filtered departures JSON size exceeds limit: %d bytes for entry: %s . Ignoring some future departures to keep the size lower.", json_size, self.start_station)
@@ -146,14 +146,13 @@ class BVCoordinator(DataUpdateCoordinator):
                                     filtered_departures.append(departure)
 
                         _LOGGER.debug("Number of departures added to the filtered list: %d", len(filtered_departures))
+                        # Set last_update timestamp
+                        self.last_update = datetime.now()
                         return filtered_departures[:self.next_departures]
                     else:
                         _LOGGER.error("API request failed with status %s: %s", response.status, await response.text())
                     response.raise_for_status()
 
-                    # Set last_update timestamp
-                    self.last_update = datetime.now()
-                    
             except Exception as e:
                 _LOGGER.error("Error fetching data: %s", e)
                 return []
