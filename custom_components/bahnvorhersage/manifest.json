@@ -2,12 +2,12 @@
   "domain": "bahnvorhersage",
   "name": "Bahnvorhersage",
   "codeowners": [
-    "@faserf"
+    "@FaserF"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/faserf/ha-bahnvorhersage#readme",
+  "documentation": "https://github.com/FaserF/ha-bahnvorhersage#readme",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/faserf/ha-bahnvorhersage/issues",
+  "issue_tracker": "https://github.com/FaserF/ha-bahnvorhersage/issues",
   "requirements": [],
   "version": "2025.01.0"
 }

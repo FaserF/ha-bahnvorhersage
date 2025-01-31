@@ -109,6 +109,10 @@ class BVCoordinator(DataUpdateCoordinator):
                     MAX_SIZE_BYTES = 16000
 
                     for departure in data.get("legs", []):
+                        # Remove unwanted attributes
+                        departure.pop('refreshToken', None)
+                        departure.pop('tripId', None)
+
                         _LOGGER.debug("Processing departure: %s", departure)
                         json_size = len(json.dumps(filtered_departures))
                         
@@ -123,31 +127,6 @@ class BVCoordinator(DataUpdateCoordinator):
                         if not departure_time:
                             _LOGGER.warning("No valid departure time found for entry: %s", departure)
                             continue
-
-                        # Convert the departure time to a datetime object
-                        if isinstance(departure_time, int):  # Unix timestamp case
-                            departure_time = datetime.fromtimestamp(departure_time)
-                        else:  # ISO 8601 string case
-                            try:
-                                departure_time = datetime.strptime(departure_time, "%Y-%m-%dT%H:%M:%S")
-                            except ValueError:
-                                _LOGGER.warning("Departure time format issue for %s: %s", departure, departure_time)
-                                continue
-
-                        # Apply any delay to the departure time, if applicable
-                        if not self.drop_late_trains:
-                            _LOGGER.debug("Departure time without added delay: %s", departure_time)
-                            delay_departure = 0  # Default delay if not available
-
-                            # Ensure departureDelayPrediction is not None
-                            if "departureDelayPrediction" in departure and departure["departureDelayPrediction"]:
-                                delay_departure_prediction = departure["departureDelayPrediction"]
-                                delay_departure = delay_departure_prediction.get("offset", 0)
-                            else:
-                                _LOGGER.debug("No departure delay prediction found, using default delay: %d", delay_departure)
-
-                            departure_time += timedelta(minutes=delay_departure)
-                            _LOGGER.debug("Departure time with added delay: %s", departure_time)
 
                         # Check if the train class is in the ignored list
                         train_classes = departure.get("productName", [])
@@ -179,7 +158,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: config_entries.Co
     bike = config_entry.data.get(CONF_BIKE, False)
     offset = config_entry.data.get(CONF_OFFSET, DEFAULT_OFFSET)
     ignored_train_types = config_entry.data.get(CONF_IGNORED_TRAINTYPES, [])
-    drop_late_trains = config_entry.data.get(CONF_DROP_LATE_TRAINS, [])
+    drop_late_trains = config_entry.data.get(CONF_DROP_LATE_TRAINS, False)
 
     coordinator = BVCoordinator(
         hass, start_station, destination_station, bike, only_regional, search_for_arrival,

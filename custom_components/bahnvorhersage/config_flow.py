@@ -60,7 +60,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Optional(CONF_DROP_LATE_TRAINS, default=False): cv.boolean,
                 vol.Optional(CONF_SEARCH_FOR_ARRIVAL, default=False): cv.boolean,
                 vol.Optional(CONF_ONLY_REGIONAL, default=False): cv.boolean,
-                vol.Optional(CONF_BIKE, default=False): cv.string,
+                vol.Optional(CONF_BIKE, default=False): cv.boolean,
                 vol.Optional(CONF_OFFSET, default=DEFAULT_OFFSET): cv.string,
                 vol.Optional(CONF_IGNORED_TRAINTYPES, default=[]): cv.multi_select(IGNORED_TRAINTYPES_OPTIONS),
             }
