@@ -6,6 +6,7 @@ import aiohttp
 import async_timeout
 import logging
 import json
+from dateutil import parser
 from urllib.parse import quote
 
 from .const import (
@@ -92,56 +93,67 @@ class BVCoordinator(DataUpdateCoordinator):
                     if response.status == 200:
                         result = await response.json()
                         _LOGGER.debug("API response: %s", result)
-                        return result
+                        
+                        filtered_departures = []
+                        ignored_train_types = self.ignored_train_types
+                        if ignored_train_types:
+                            _LOGGER.debug("Ignoring products: %s", ignored_train_types)
+
+                        MAX_SIZE_BYTES = 16000
+
+                        for journey in result:
+                            for departure in journey.get("legs", []):  # Iterate over each leg in the journey
+                                # Remove unwanted attributes
+                                departure.pop('refreshToken', None)
+                                departure.pop('tripId', None)
+
+                                _LOGGER.debug("Processing departure: %s", departure)
+                                json_size = len(json.dumps(filtered_departures))
+                                
+                                # Check if the filtered departures JSON size exceeds the limit
+                                if json_size > MAX_SIZE_BYTES:
+                                    _LOGGER.info("Filtered departures JSON size exceeds limit: %d bytes for entry: %s . Ignoring some future departures to keep the size lower.", json_size, self.start_station)
+                                    break
+
+                                departure_time_str = departure.get("departure")
+
+                                if not departure_time_str:
+                                    _LOGGER.warning("No valid departure time found for entry: %s", departure)
+                                    continue
+
+                                try:
+                                    departure_time = parser.isoparse(departure_time_str)
+                                except ValueError:
+                                    _LOGGER.warning("Invalid departure time format: %s", departure_time_str)
+                                    continue
+
+                                if departure_time.tzinfo is None:
+                                    from pytz import UTC
+                                    departure_time = departure_time.replace(tzinfo=UTC)
+
+                                departure_seconds = (departure_time - datetime.now(departure_time.tzinfo)).total_seconds()
+
+                                # Check if the train class is in the ignored list
+                                train_classes = departure.get("productName", [])
+                                _LOGGER.debug("Departure train classes: %s", train_classes)
+                                if any(train_class in ignored_train_types for train_class in train_classes):
+                                    _LOGGER.debug("Ignoring departure due to train class: %s", train_classes)
+                                    continue
+
+                                # Calculate the time offset and only add departures that occur after the offset
+                                departure_seconds = (departure_time - datetime.now(departure_time.tzinfo)).total_seconds()
+                                if departure_seconds >= self.offset:  # Only show departures after the offset
+                                    filtered_departures.append(departure)
+
+                        _LOGGER.debug("Number of departures added to the filtered list: %d", len(filtered_departures))
+                        return filtered_departures[:self.next_departures]
                     else:
                         _LOGGER.error("API request failed with status %s: %s", response.status, await response.text())
                     response.raise_for_status()
 
                     # Set last_update timestamp
                     self.last_update = datetime.now()
-
-                    # Filter departures based on the offset and ignored products
-                    filtered_departures = []
-                    ignored_train_types = self.ignored_train_types
-                    if ignored_train_types:
-                        _LOGGER.debug("Ignoring products: %s", ignored_train_types)
-
-                    MAX_SIZE_BYTES = 16000
-
-                    for departure in data.get("legs", []):
-                        # Remove unwanted attributes
-                        departure.pop('refreshToken', None)
-                        departure.pop('tripId', None)
-
-                        _LOGGER.debug("Processing departure: %s", departure)
-                        json_size = len(json.dumps(filtered_departures))
-                        
-                        # Check if the filtered departures JSON size exceeds the limit
-                        if json_size > MAX_SIZE_BYTES:
-                            _LOGGER.info("Filtered departures JSON size exceeds limit: %d bytes for entry: %s . Ignoring some future departures to keep the size lower.", json_size, self.start_station)
-                            break
-
-                        departure_time = departure.get("departure")
-
-                        # If no valid departure time is found, log a warning and continue to the next departure
-                        if not departure_time:
-                            _LOGGER.warning("No valid departure time found for entry: %s", departure)
-                            continue
-
-                        # Check if the train class is in the ignored list
-                        train_classes = departure.get("productName", [])
-                        _LOGGER.debug("Departure train classes: %s", train_classes)
-                        if any(train_class in ignored_train_types for train_class in train_classes):
-                            _LOGGER.debug("Ignoring departure due to train class: %s", train_classes)
-                            continue
-
-                        # Calculate the time offset and only add departures that occur after the offset
-                        departure_seconds = (departure_time - datetime.now()).total_seconds()
-                        if departure_seconds >= self.offset:  # Only show departures after the offset
-                            filtered_departures.append(departure)
-
-                    _LOGGER.debug("Number of departures added to the filtered list: %d", len(filtered_departures))
-                    return filtered_departures[:self.next_departures]
+                    
             except Exception as e:
                 _LOGGER.error("Error fetching data: %s", e)
                 return []

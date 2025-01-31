@@ -13,13 +13,13 @@ class DBInfoSensor(SensorEntity):
         self.start_station = start_station
         self.destination_station = destination_station
 
-        self._attr_name = f"{self.start_station} → {self.destination_station}"
+        self._attr_name = f"{self.start_station} to {self.destination_station} Bahnvorhersage"
 
         if len(self._attr_name) > MAX_LENGTH:
             self._attr_name = self._attr_name[:MAX_LENGTH]
 
         self._attr_unique_id = (
-            f"bahnvorhersage_{self.start_station}_{self.destination_station}"
+            f"{self.start_station}_to_{self.destination_station}_bahnvorhersage"
             .lower()
             .replace(" ", "_")
         )
@@ -40,28 +40,24 @@ class DBInfoSensor(SensorEntity):
     @property
     def native_value(self):
         if self.coordinator.data:
-            # Log the data structure to ensure it's what we expect
             _LOGGER.debug("Data received for station: %s to destination: %s", self.start_station, self.destination_station)
+            departure_time = self.coordinator.data[0].get("departure", "Unknown")
             
-            # Ensure we have legs in the data and then access the first departure
-            if 'legs' in self.coordinator.data[0]:
-                legs = self.coordinator.data[0]['legs']
-                if legs:
-                    departure_time = legs[0].get("departure", "Unknown")
-                    if departure_time == "Unknown":
-                        _LOGGER.warning("Departure time not found in the first leg for station: %s to destination: %s", self.start_station, self.destination_station)
-                    else:
-                        _LOGGER.debug("Departure time found: %s", departure_time)
-                    return departure_time
-                else:
-                    _LOGGER.warning("No legs found in data for station: %s to destination: %s", self.start_station, self.destination_station)
+            if departure_time == "Unknown":
+                _LOGGER.warning("Departure time not found in data for station: %s to destination: %s", self.start_station, self.destination_station)
             else:
-                _LOGGER.warning("No 'legs' data found in response for station: %s to destination: %s", self.start_station, self.destination_station)
+                _LOGGER.debug("Departure time found: %s", departure_time)
+                try:
+                    departure_time = datetime.fromisoformat(departure_time)
+                    return departure_time.strftime("%H:%M")
+                except ValueError:
+                    _LOGGER.warning("Invalid departure time format: %s", departure_time)
+                    return departure_time
             
+            return departure_time
         else:
             _LOGGER.warning("No data received for station: %s to destination: %s", self.start_station, self.destination_station)
-            
-        return "No Data"
+            return "No Data"
 
     @property
     def extra_state_attributes(self):

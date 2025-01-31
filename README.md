@@ -41,15 +41,81 @@ Go to Configuration -> Integrations and click on "add integration". Then search 
 |----------------------------|---------|----------|---------|-------------|
 | `start_station`            | string  | Yes      | -       | The starting station |
 | `destination_station`      | string  | Yes      | -       | The destination station |
-| `next_departures`         | int     | No       | 5       | Number of upcoming departures to show |
-| `update_interval`          | int     | No       | 60      | Update interval in seconds |
+| `next_departures`          | int     | No       | 2       | Number of upcoming departures to show |
+| `update_interval`          | int     | No       | 3       | Update interval in seconds |
 | `hide_low_delay`           | boolean | No       | False   | Hide trains with low delays |
 | `drop_late_trains`         | boolean | No       | False   | Exclude very late trains |
 | `search_for_arrival`       | boolean | No       | False   | Search for arrival times instead of departure times |
 | `only_regional`            | boolean | No       | False   | Only show regional trains |
 | `bike`                     | boolean | No       | False   | Show bike-friendly trains |
-| `offset`                   | string  | No       | 0       | Time offset for departure search |
+| `offset`                   | string  | No       | 00:00   | Time offset for departure search |
 | `ignored_traintypes`       | list    | No       | []      | List of train types to ignore |
+
+## Automation Examples for Home Assistant
+
+### 1. Notify on Next Departure
+This automation sends a push notification with the next scheduled departure from **Start** to **Destination**.
+
+```yaml
+alias: "Next Train Departure Notification"
+trigger:
+  - platform: time
+    at: "07:00:00"
+condition: []
+action:
+  - service: notify.mobile_app_your_smartphone
+    data:
+      title: "Train Forecast"
+      message: >
+        The next train from {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'start_station') }}
+        to {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'destination_station') }} 
+        departs at {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['departure'] }}.
+        Estimated arrival: {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['arrival'] }}.
+mode: single
+```
+
+### 2. Delay Warning for the Next Train
+This automation sends a warning notification if the predicted departure delay exceeds 2 minutes.
+
+```yaml
+alias: "Train Delay Warning"
+trigger:
+  - platform: template
+    value_template: >
+      {% set delay_predictions = state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['departureDelayPrediction']['predictions'] %}
+      {{ (delay_predictions | sum / delay_predictions | length) > 2 }}
+condition: []
+action:
+  - service: notify.mobile_app_your_smartphone
+    data:
+      title: "Train Delay Alert"
+      message: >
+        The train from {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'start_station') }} 
+        to {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'destination_station') }} is expected to be delayed.
+        Average predicted delay: {{ (state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['departureDelayPrediction']['predictions'] | sum / state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['departureDelayPrediction']['predictions'] | length) | round(1) }} minutes.
+mode: single
+```
+
+### 3. Announce Train Departure on Smart Speaker
+This automation announces the next departure time using a smart speaker like Google Home or Amazon Echo.
+
+```yaml
+alias: "Announce Next Train Departure"
+trigger:
+  - platform: time_pattern
+    minutes: "/5"  # Check every 5 minutes
+condition: []
+action:
+  - service: tts.google_translate_say
+    entity_id: media_player.living_room_speaker
+    data:
+      message: >
+        The next train from {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'start_station') }}
+        to {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'destination_station') }} 
+        departs at {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['departure'] }} 
+        from platform {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['departurePlatform'] }}.
+mode: single
+```
 
 ## API Data
 ### Accessing their data
