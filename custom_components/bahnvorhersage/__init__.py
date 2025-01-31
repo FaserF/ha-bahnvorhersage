@@ -96,8 +96,6 @@ class BVCoordinator(DataUpdateCoordinator):
                     else:
                         _LOGGER.error("API request failed with status %s: %s", response.status, await response.text())
                     response.raise_for_status()
-                    data = await response.json()
-                    _LOGGER.debug("Data fetched successfully: %s", str(data)[:350] + ("..." if len(str(data)) > 350 else ""))
 
                     # Set last_update timestamp
                     self.last_update = datetime.now()
@@ -114,7 +112,7 @@ class BVCoordinator(DataUpdateCoordinator):
                         _LOGGER.debug("Processing departure: %s", departure)
                         json_size = len(json.dumps(filtered_departures))
                         if json_size > MAX_SIZE_BYTES:
-                            _LOGGER.info("Filtered departures JSON size exceeds limit: %d bytes for entry: %s . Ignoring some future departures to keep the size lower.", json_size, self.station)
+                            _LOGGER.info("Filtered departures JSON size exceeds limit: %d bytes for entry: %s . Ignoring some future departures to keep the size lower.", json_size, self.start_station)
                             break
 
                         departure_time = departure.get("departure")
@@ -131,24 +129,21 @@ class BVCoordinator(DataUpdateCoordinator):
                             try:
                                 departure_time = datetime.strptime(departure_time, "%Y-%m-%dT%H:%M:%S")
                             except ValueError:
-                                try:
-                                    # Fallback to assuming time format HH:MM if the previous format doesn't work
-                                    departure_time = datetime.strptime(departure_time, "%H:%M").replace(
-                                        year=datetime.now().year,
-                                        month=datetime.now().month,
-                                        day=datetime.now().day,
-                                    )
-                                except ValueError:
-                                    _LOGGER.error("Invalid time format: %s", departure_time)
-                                    continue
+                                _LOGGER.warning("Departure time format issue for %s: %s", departure, departure_time)
+                                continue
 
                         # Apply any delay to the departure time, if applicable
                         if not self.drop_late_trains:
                             _LOGGER.debug("Departure time without added delay: %s", departure_time)
-                            delay_departure_predict = departure.get("departureDelayPrediction")
-                            delay_departure = delay_departure_predict.get("offset")
-                            if delay_departure is None:
-                                delay_departure = 0  # Set default value if None
+                            delay_departure = 0  # Default delay if not available
+
+                            # Sicherstellen, dass delay_departure_prediction nicht None ist
+                            if "departureDelayPrediction" in departure and departure["departureDelayPrediction"]:
+                                delay_departure_prediction = departure["departureDelayPrediction"]
+                                delay_departure = delay_departure_prediction.get("offset", 0)
+                            else:
+                                _LOGGER.debug("No departure delay prediction found, using default delay: %d", delay_departure)
+
                             departure_time += timedelta(minutes=delay_departure)
                             _LOGGER.debug("Departure time with added delay: %s", departure_time)
 

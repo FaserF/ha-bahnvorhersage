@@ -5,7 +5,7 @@ WORK IN PROGRESS! NOT WORKING YET!
 
 The `bahnvorhersage` sensor will give you the prediction departure time of the next trains for the given start & destination combination, containing many more attribute informations.
 
-This integration works great side-by-side with [ha-db_infoscreen](https://github.com/FaserF/ha-db_infoscreen).
+This integration works great side-by-side with [ha-db_infoscreen](https://github.com/FaserF/ha-db_infoscreen). 
 This is a superior to [ha-deutschebahn](https://github.com/FaserF/ha-deutschebahn).
 
 ## Installation
@@ -50,6 +50,21 @@ Go to Configuration -> Integrations and click on "add integration". Then search 
 | `bike`                     | boolean | No       | False   | Show bike-friendly trains |
 | `offset`                   | string  | No       | 0       | Time offset for departure search |
 | `ignored_traintypes`       | list    | No       | []      | List of train types to ignore |
+
+## API Data
+### Accessing their data
+The bahnvorhersage.de data is being accessed with the [API](https://bahnvorhersage.de/api/journeys) and a POST request
+
+```json
+{
+    "start": "Start Station",
+    "destination": "Destination",
+    "date": "25.01.2025 12:00",
+    "search_for_arrival": false,
+    "only_regional": false,
+    "bike": false
+}
+```
 
 ### JSON Format
 The API returns data in the following json format usually:

@@ -44,7 +44,11 @@ class DBInfoSensor(SensorEntity):
                 self.coordinator.data[0].get("departure", "No Data")
             )
             delay_departure_prediction = self.coordinator.data[0].get("departureDelayPrediction")
-            delay_departure = delay_departure_prediction.get("offset", 0)
+            
+            if delay_departure_prediction:
+                delay_departure = delay_departure_prediction.get("offset", 0)
+            else:
+                delay_departure = 0
 
             if isinstance(departure_time, int):  # Unix timestamp case
                 departure_time = datetime.fromtimestamp(departure_time)
@@ -53,29 +57,34 @@ class DBInfoSensor(SensorEntity):
                 _LOGGER.debug("Sensor state updated: %s", departure_time)
                 return departure_time
             else:
-                departure_time_with_delay = departure_time
-                departure_time_with_delay = f"{departure_time} +{delay_departure}"
-                _LOGGER.debug("Sensor state updated with delay: %s", departure_time_with_delay)
-                return departure_time_with_delay
+                departure_time_with_delay = departure_time + timedelta(minutes=delay_departure)
+                departure_time_with_delay_str = f"{departure_time_with_delay} +{delay_departure}"
+                _LOGGER.debug("Sensor state updated with delay: %s", departure_time_with_delay_str)
+                return departure_time_with_delay_str
         else:
-            _LOGGER.warning("No data received for station: %s, via_stations: %s", self.station, self.via_stations)
+            _LOGGER.warning("No data received for station: %s to destination: %s", self.start_station, self.destination_station)
             return "No Data"
 
     @property
     def extra_state_attributes(self):
-        full_api_url = getattr(self.coordinator, "api_url", "dbf.finalrewind.org")
-        attribution = f"Data provided by API {full_api_url}"
+        attribution = f"Data provided by API https://bahnvorhersage.de/api/journeys"
 
         next_departures = self.coordinator.data or []
         for departure in next_departures:
             if 'departure' in departure and isinstance(departure['departure'], int):
                 departure['departure'] = datetime.fromtimestamp(departure['departure']).strftime('%Y-%m-%d %H:%M:%S')
 
+        last_updated = getattr(self.coordinator, "last_update", None)
+        if last_updated:
+            last_updated = last_updated.isoformat()
+        else:
+            last_updated = "Unknown"
+
         return {
             "next_departures": next_departures,
             "start_station": self.start_station,
             "destination_station": self.destination_station,
-            "last_updated": self.coordinator.last_update.isoformat() if self.coordinator.last_update else "Unknown",
+            "last_updated": last_updated,
             "attribution": attribution,
         }
 
@@ -87,11 +96,11 @@ class DBInfoSensor(SensorEntity):
         _LOGGER.debug("Sensor update triggered but not forcing refresh.")
 
     async def async_added_to_hass(self):
-        _LOGGER.debug("Sensor added to Home Assistant for station: %s, via_stations: %s", self.station, self.via_stations)
+        _LOGGER.debug("Sensor added to Home Assistant for station: %s to destination: %s", self.start_station, self.destination_station)
         self.async_on_remove(
             self.coordinator.async_add_listener(self.async_write_ha_state)
         )
-        _LOGGER.debug("Listener attached for station: %s, via_stations: %s", self.station, self.via_stations)
+        _LOGGER.debug("Listener attached for station: %s to destination: %s", self.start_station, self.destination_station)
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
