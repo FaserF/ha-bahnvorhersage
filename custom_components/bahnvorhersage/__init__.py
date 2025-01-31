@@ -106,6 +106,16 @@ class BVCoordinator(DataUpdateCoordinator):
                                 # Remove unwanted attributes
                                 departure.pop('refreshToken', None)
                                 departure.pop('tripId', None)
+                                departure.pop('operator', None)
+                                departure.pop('location.id', None)
+                                departure.pop('location.latitude', None)
+                                departure.pop('location.longitude', None)
+                                departure.pop('location.type', None)
+                                departure.pop('stop.id', None)
+                                departure.pop('stop.latitude', None)
+                                departure.pop('stop.longitude', None)
+                                departure.pop('stop.type', None)
+                                departure.pop('operator.id', None)
 
                                 _LOGGER.debug("Processing departure: %s", departure)
                                 json_size = len(json.dumps(filtered_departures))
