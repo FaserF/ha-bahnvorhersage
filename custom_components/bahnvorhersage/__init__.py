@@ -6,6 +6,7 @@ import aiohttp
 import async_timeout
 import logging
 import json
+import asyncio
 from dateutil import parser
 from urllib.parse import quote
 
@@ -32,14 +33,15 @@ class BVCoordinator(DataUpdateCoordinator):
         self.ignored_train_types = ignored_train_types
         self.drop_late_trains = drop_late_trains
 
-        start_station_cleaned = " ".join(start_station.split())
-        encoded_start_station = quote(start_station_cleaned, safe=",-")
-        encoded_start_station = encoded_start_station.replace(" ", "%20")
+        #start_station_cleaned = " ".join(start_station.split())
+        #encoded_start_station = quote(start_station_cleaned, safe=",-")
+        #encoded_start_station = encoded_start_station.replace(" ", "%20")
 
-        destination_station_cleaned = " ".join(destination_station.split())
-        encoded_destination_station = quote(destination_station_cleaned, safe=",-")
-        encoded_destination_station = encoded_destination_station.replace(" ", "%20")
+        #destination_station_cleaned = " ".join(destination_station.split())
+        #encoded_destination_station = quote(destination_station_cleaned, safe=",-")
+        #encoded_destination_station = encoded_destination_station.replace(" ", "%20")
 
+        self.last_valid_data = []
         self.api_url = "https://bahnvorhersage.de/api/journeys"
 
         # Ensure update_interval is passed correctly
@@ -76,95 +78,107 @@ class BVCoordinator(DataUpdateCoordinator):
         Fetches data from the API and processes it based on the configuration.
         """
         _LOGGER.debug("Fetching data for station: %s to %s", self.start_station, self.destination_station)
-        async with aiohttp.ClientSession() as session:
-            try:
-                async with async_timeout.timeout(10):
-                    # Prepare the request payload
-                    payload = {
-                        "start": self.start_station,
-                        "destination": self.destination_station,
-                        "date": datetime.now().strftime("%d.%m.%Y %H:%M"),  # Current date and time
-                        "search_for_arrival": self.search_for_arrival,
-                        "only_regional": self.only_regional,
-                        "bike": self.bike,
-                    }
+        retries = 3
+        delay = 60
+        for attempt in range(retries):
+            _LOGGER.debug("Fetching data, attempt %d/%d", attempt + 1, retries)
+            async with aiohttp.ClientSession() as session:
+                try:
+                    async with async_timeout.timeout(10):
+                        # Prepare the request payload
+                        payload = {
+                            "start": self.start_station,
+                            "destination": self.destination_station,
+                            "date": datetime.now().strftime("%d.%m.%Y %H:%M"),  # Current date and time
+                            "search_for_arrival": self.search_for_arrival,
+                            "only_regional": self.only_regional,
+                            "bike": self.bike,
+                        }
 
-                    response = await session.post(self.api_url, json=payload)
-                    if response.status == 200:
-                        result = await response.json()
-                        _LOGGER.debug("API response: %s", result)
+                        response = await session.post(self.api_url, json=payload)
+                        if response.status == 200:
+                            result = await response.json()
+                            _LOGGER.debug("API response: %s", result)
 
-                        filtered_departures = []
-                        ignored_train_types = self.ignored_train_types
-                        if ignored_train_types:
-                            _LOGGER.debug("Ignoring products: %s", ignored_train_types)
+                            filtered_departures = []
+                            ignored_train_types = self.ignored_train_types
+                            if ignored_train_types:
+                                _LOGGER.debug("Ignoring products: %s", ignored_train_types)
 
-                        MAX_SIZE_BYTES = 16000
+                            MAX_SIZE_BYTES = 16000
 
-                        for journey in result:
-                            for departure in journey.get("legs", []):  # Iterate over each leg in the journey
-                                # Remove unwanted attributes
-                                departure.pop('refreshToken', None)
-                                departure.pop('tripId', None)
-                                departure.pop('operator', None)
-                                departure.pop('location.id', None)
-                                departure.pop('location.latitude', None)
-                                departure.pop('location.longitude', None)
-                                departure.pop('location.type', None)
-                                departure.pop('stop.id', None)
-                                departure.pop('stop.latitude', None)
-                                departure.pop('stop.longitude', None)
-                                departure.pop('stop.type', None)
-                                departure.pop('operator.id', None)
+                            for journey in result:
+                                for departure in journey.get("legs", []):  # Iterate over each leg in the journey
+                                    # Remove unwanted attributes
+                                    departure.pop('refreshToken', None)
+                                    departure.pop('tripId', None)
+                                    departure.pop('operator', None)
+                                    departure.pop('location.id', None)
+                                    departure.pop('location.latitude', None)
+                                    departure.pop('location.longitude', None)
+                                    departure.pop('location.type', None)
+                                    departure.pop('stop.id', None)
+                                    departure.pop('stop.latitude', None)
+                                    departure.pop('stop.longitude', None)
+                                    departure.pop('stop.type', None)
+                                    departure.pop('operator.id', None)
 
-                                _LOGGER.debug("Processing departure: %s", departure)
-                                json_size = len(json.dumps(filtered_departures))
+                                    _LOGGER.debug("Processing departure: %s", departure)
+                                    json_size = len(json.dumps(filtered_departures))
 
-                                # Check if the filtered departures JSON size exceeds the limit
-                                if json_size > MAX_SIZE_BYTES:
-                                    _LOGGER.info("Filtered departures JSON size exceeds limit: %d bytes for entry: %s . Ignoring some future departures to keep the size lower.", json_size, self.start_station)
-                                    break
+                                    # Check if the filtered departures JSON size exceeds the limit
+                                    if json_size > MAX_SIZE_BYTES:
+                                        _LOGGER.info("Filtered departures JSON size exceeds limit: %d bytes for entry: %s . Ignoring some future departures to keep the size lower.", json_size, self.start_station)
+                                        break
 
-                                departure_time_str = departure.get("departure")
+                                    departure_time_str = departure.get("departure")
 
-                                if not departure_time_str:
-                                    _LOGGER.warning("No valid departure time found for entry: %s", departure)
-                                    continue
+                                    if not departure_time_str:
+                                        _LOGGER.warning("No valid departure time found for entry: %s", departure)
+                                        continue
 
-                                try:
-                                    departure_time = parser.isoparse(departure_time_str)
-                                except ValueError:
-                                    _LOGGER.warning("Invalid departure time format: %s", departure_time_str)
-                                    continue
+                                    try:
+                                        departure_time = parser.isoparse(departure_time_str)
+                                    except ValueError:
+                                        _LOGGER.warning("Invalid departure time format: %s", departure_time_str)
+                                        continue
 
-                                if departure_time.tzinfo is None:
-                                    from pytz import UTC
-                                    departure_time = departure_time.replace(tzinfo=UTC)
+                                    if departure_time.tzinfo is None:
+                                        from pytz import UTC
+                                        departure_time = departure_time.replace(tzinfo=UTC)
 
-                                departure_seconds = (departure_time - datetime.now(departure_time.tzinfo)).total_seconds()
+                                    departure_seconds = (departure_time - datetime.now(departure_time.tzinfo)).total_seconds()
 
-                                # Check if the train class is in the ignored list
-                                train_class = departure.get("productName", "")
-                                if train_class in ignored_train_types:
-                                    _LOGGER.debug("Ignoring departure due to train class: %s", train_class)
-                                    continue
+                                    # Check if the train class is in the ignored list
+                                    train_class = departure.get("productName", "")
+                                    if train_class in ignored_train_types:
+                                        _LOGGER.debug("Ignoring departure due to train class: %s", train_class)
+                                        continue
 
-                                # Calculate the time offset and only add departures that occur after the offset
-                                departure_seconds = (departure_time - datetime.now(departure_time.tzinfo)).total_seconds()
-                                if departure_seconds >= self.offset:  # Only show departures after the offset
-                                    filtered_departures.append(departure)
+                                    # Calculate the time offset and only add departures that occur after the offset
+                                    departure_seconds = (departure_time - datetime.now(departure_time.tzinfo)).total_seconds()
+                                    if departure_seconds >= self.offset:  # Only show departures after the offset
+                                        filtered_departures.append(departure)
 
-                        _LOGGER.debug("Number of departures added to the filtered list: %d", len(filtered_departures))
-                        # Set last_update timestamp
-                        self.last_update = datetime.now()
-                        return filtered_departures[:self.next_departures]
-                    else:
-                        _LOGGER.error("API request failed with status %s: %s", response.status, await response.text())
-                    response.raise_for_status()
+                            _LOGGER.debug("Number of departures added to the filtered list: %d", len(filtered_departures))
+                            # Set last_update timestamp
+                            self.last_update = datetime.now()
+                            self.last_valid_data = filtered_departures[:self.next_departures]
+                            return self.last_valid_data
+                        elif response.status == 500:
+                            _LOGGER.info("API request failed with status %s: %s", response.status, await response.text())
+                            _LOGGER.warning("API returned 500. Retrying in %d seconds...", delay)
+                            await asyncio.sleep(delay)
+                        else:
+                            _LOGGER.error("API request failed with status %s: %s", response.status, await response.text())
+                        response.raise_for_status()
 
-            except Exception as e:
-                _LOGGER.error("Error fetching data: %s", e)
-                return []
+                except Exception as e:
+                    _LOGGER.error("Error fetching data: %s", e)
+                    return []
+
+        _LOGGER.warning("All retries failed. Keeping last valid data.")
+        return self.last_valid_data
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: config_entries.ConfigEntry):
     hass.data.setdefault(DOMAIN, {})
