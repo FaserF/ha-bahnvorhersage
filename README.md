@@ -58,7 +58,28 @@ Go to Configuration -> Integrations and click on "add integration". Then search 
 
 ## Automation Examples for Home Assistant
 
-### 1. Notify on Next Departure
+### 1. Predict Next Departure delay
+This automation sends a push notification with the next predicted departure delay from **Start** to **Destination**.
+
+```yaml
+alias: "Next Train predicted Departure Delay Notification"
+trigger:
+  - platform: time
+    at: "07:00:00"
+condition: []
+action:
+  - service: notify.mobile_app_your_smartphone
+    data:
+      title: "Train Forecast with prediction"
+      message: >
+        The next train from {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'start_station') }}
+        to {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'destination_station') }}
+        has an estimated predicted departure delay {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['departureDelayPrediction']['predictions'] }}.
+        Estimated arrival delay: {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['arrivalDelayPrediction']['predictions'] }}.
+mode: single
+```
+
+### 2. Notify on Next Departure
 This automation sends a push notification with the next scheduled departure from **Start** to **Destination**.
 
 ```yaml
@@ -79,7 +100,7 @@ action:
 mode: single
 ```
 
-### 2. Delay Warning for the Next Train
+### 3. Delay Warning for the Next Train
 This automation sends a warning notification if the predicted departure delay exceeds 2 minutes.
 
 ```yaml
@@ -101,7 +122,7 @@ action:
 mode: single
 ```
 
-### 3. Announce Train Departure on Smart Speaker
+### 4. Announce Train Departure on Smart Speaker
 This automation announces the next departure time using a smart speaker like Google Home or Amazon Echo.
 
 ```yaml

@@ -145,6 +145,12 @@ class BVCoordinator(DataUpdateCoordinator):
                                     else:
                                         _LOGGER.debug("Keeping stopovers data.")
 
+                                    for key in ["departureDelayPrediction", "arrivalDelayPrediction"]:
+                                        if key in departure and "predictions" in departure[key]:
+                                            predictions = departure[key]["predictions"]
+                                            if predictions:
+                                                departure[key]["predictions"] = sum(predictions) / len(predictions)
+
                                     _LOGGER.debug("Processing departure: %s", departure)
                                     json_size = len(json.dumps(filtered_departures))
 
