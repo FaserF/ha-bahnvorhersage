@@ -110,25 +110,40 @@ class BVCoordinator(DataUpdateCoordinator):
 
                             for journey in result:
                                 for departure in journey.get("legs", []):  # Iterate over each leg in the journey
-                                    # Remove unwanted attributes
-                                    departure.pop('refreshToken', None)
-                                    departure.pop('tripId', None)
-                                    departure.pop('operator', None)
-                                    departure.pop('location.id', None)
-                                    departure.pop('location.latitude', None)
-                                    departure.pop('location.longitude', None)
-                                    departure.pop('location.type', None)
-                                    departure.pop('stop.id', None)
-                                    departure.pop('stop.latitude', None)
-                                    departure.pop('stop.longitude', None)
-                                    departure.pop('stop.type', None)
-                                    departure.pop('operator.id', None)
+                                    if "origin" in departure and "location" in departure["origin"]:
+                                        departure["origin"]["location"].pop("id", None)
+                                        departure["origin"]["location"].pop("latitude", None)
+                                        departure["origin"]["location"].pop("longitude", None)
+                                        departure["origin"]["location"].pop("type", None)
+
+                                    if "destination" in departure and "location" in departure["destination"]:
+                                        departure["destination"]["location"].pop("id", None)
+                                        departure["destination"]["location"].pop("latitude", None)
+                                        departure["destination"]["location"].pop("longitude", None)
+                                        departure["destination"]["location"].pop("type", None)
+
+                                    if "stop" in departure:
+                                        departure["stop"].pop("id", None)
+                                        departure["stop"].pop("latitude", None)
+                                        departure["stop"].pop("longitude", None)
+                                        departure["stop"].pop("type", None)
+
+                                    if "line" in departure:
+                                        departure["line"].pop("adminCode", None)
+                                        if "operator" in departure["line"]:
+                                            departure["line"]["operator"].pop("id", None)
+                                            departure["line"]["operator"].pop("type", None)
+
+                                    departure.pop("refreshToken", None)
+                                    departure.pop("tripId", None)
+                                    departure.pop("operator", None)
+                                    departure.pop("type", None)
                                     if not self.show_stopovers:
                                         if 'stopovers' in departure:
                                             _LOGGER.debug("Removing stopovers from departure: %s", departure)
                                         departure.pop('stopovers', None)
                                     else:
-                                        _LOGGER.debug("Keeping stopovers: %s", departure.get('stopovers'))
+                                        _LOGGER.debug("Keeping stopovers data.")
 
                                     _LOGGER.debug("Processing departure: %s", departure)
                                     json_size = len(json.dumps(filtered_departures))
@@ -157,7 +172,10 @@ class BVCoordinator(DataUpdateCoordinator):
                                     departure_seconds = (departure_time - datetime.now(departure_time.tzinfo)).total_seconds()
 
                                     # Check if the train class is in the ignored list
-                                    train_class = departure.get("productName", "")
+                                    train_class = ""
+                                    if "line" in departure and "productName" in departure["line"]:
+                                        train_class = departure["line"]["productName"]
+
                                     if train_class in ignored_train_types:
                                         _LOGGER.debug("Ignoring departure due to train class: %s", train_class)
                                         continue
