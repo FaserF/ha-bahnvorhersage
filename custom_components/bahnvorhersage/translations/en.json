@@ -6,6 +6,7 @@
                 "title": "Bahnvorhersage Configuration",
                 "description": "Please provide the connection details.",
                 "data": {
+                    "show_stopovers": "Show stopovers in attribute data (not recommended, may cause performance issues)",
                     "start_station": "Start station",
                     "destination_station": "Destination station",
                     "search_for_arrival": "Search for arrival time",
@@ -36,6 +37,7 @@
                 "title": "Edit Options",
                 "description": "Adjust the options for this connection.",
                 "data": {
+                    "show_stopovers": "Show stopovers in attribute data (not recommended, may cause performance issues)",
                     "search_for_arrival": "Search for arrival time",
                     "only_regional": "Use only regional trains",
                     "bike": "Show bike allowance",

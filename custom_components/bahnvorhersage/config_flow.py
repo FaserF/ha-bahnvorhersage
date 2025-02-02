@@ -6,7 +6,7 @@ from homeassistant.data_entry_flow import FlowResult
 import homeassistant.helpers.config_validation as cv
 from .const import (
     DOMAIN, CONF_START_STATION, CONF_DESTINATION_STATION, CONF_NEXT_DEPARTURES, CONF_UPDATE_INTERVAL,
-    DEFAULT_NEXT_DEPARTURES, DEFAULT_UPDATE_INTERVAL, DEFAULT_OFFSET, MAX_SENSORS,
+    DEFAULT_NEXT_DEPARTURES, DEFAULT_UPDATE_INTERVAL, DEFAULT_OFFSET, CONF_SHOW_STOPOVERS,
     CONF_HIDE_LOW_DELAY, CONF_SEARCH_FOR_ARRIVAL, CONF_ONLY_REGIONAL, CONF_BIKE,
     CONF_OFFSET, CONF_IGNORED_TRAINTYPES, CONF_DROP_LATE_TRAINS, IGNORED_TRAINTYPES_OPTIONS
 )
@@ -56,6 +56,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Required(CONF_DESTINATION_STATION): cv.string,
                 vol.Optional(CONF_NEXT_DEPARTURES, default=DEFAULT_NEXT_DEPARTURES): cv.positive_int,
                 vol.Optional(CONF_UPDATE_INTERVAL, default=DEFAULT_UPDATE_INTERVAL): cv.positive_int,
+                vol.Optional(CONF_SHOW_STOPOVERS, default=False): cv.boolean,
                 vol.Optional(CONF_HIDE_LOW_DELAY, default=False): cv.boolean,
                 vol.Optional(CONF_DROP_LATE_TRAINS, default=False): cv.boolean,
                 vol.Optional(CONF_SEARCH_FOR_ARRIVAL, default=False): cv.boolean,
@@ -102,6 +103,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_UPDATE_INTERVAL,
                         default=current_options.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
                     ): cv.positive_int,
+                    vol.Optional(
+                        CONF_SHOW_STOPOVERS,
+                        default=current_options.get(CONF_SHOW_STOPOVERS, False)
+                    ): cv.boolean,
                     vol.Optional(
                         CONF_HIDE_LOW_DELAY,
                         default=current_options.get(CONF_HIDE_LOW_DELAY, False)

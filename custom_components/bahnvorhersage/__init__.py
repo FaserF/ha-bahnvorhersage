@@ -15,13 +15,13 @@ from .const import (
     DEFAULT_UPDATE_INTERVAL, DEFAULT_NEXT_DEPARTURES, DEFAULT_OFFSET,
     CONF_HIDE_LOW_DELAY, CONF_OFFSET, MIN_UPDATE_INTERVAL,
     CONF_IGNORED_TRAINTYPES, CONF_DROP_LATE_TRAINS, CONF_UPDATE_INTERVAL,
-    CONF_SEARCH_FOR_ARRIVAL, CONF_ONLY_REGIONAL, CONF_BIKE
+    CONF_SEARCH_FOR_ARRIVAL, CONF_ONLY_REGIONAL, CONF_BIKE, CONF_SHOW_STOPOVERS
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 class BVCoordinator(DataUpdateCoordinator):
-    def __init__(self, hass: HomeAssistant, start_station: str, destination_station: str, bike: bool, only_regional: bool, search_for_arrival: bool, offset: str, next_departures: int, update_interval: int, hide_low_delay: bool, ignored_train_types: list, drop_late_trains: bool):
+    def __init__(self, hass: HomeAssistant, start_station: str, destination_station: str, bike: bool, only_regional: bool, search_for_arrival: bool, offset: str, next_departures: int, update_interval: int, hide_low_delay: bool, ignored_train_types: list, drop_late_trains: bool, show_stopovers: bool):
         self.start_station = start_station
         self.destination_station = destination_station
         self.next_departures = next_departures
@@ -32,6 +32,7 @@ class BVCoordinator(DataUpdateCoordinator):
         self.offset = self.convert_offset_to_seconds(offset)
         self.ignored_train_types = ignored_train_types
         self.drop_late_trains = drop_late_trains
+        self.show_stopovers = show_stopovers
 
         #start_station_cleaned = " ".join(start_station.split())
         #encoded_start_station = quote(start_station_cleaned, safe=",-")
@@ -122,6 +123,12 @@ class BVCoordinator(DataUpdateCoordinator):
                                     departure.pop('stop.longitude', None)
                                     departure.pop('stop.type', None)
                                     departure.pop('operator.id', None)
+                                    if not self.show_stopovers:
+                                        if 'stopovers' in departure:
+                                            _LOGGER.debug("Removing stopovers from departure: %s", departure)
+                                        departure.pop('stopovers', None)
+                                    else:
+                                        _LOGGER.debug("Keeping stopovers: %s", departure.get('stopovers'))
 
                                     _LOGGER.debug("Processing departure: %s", departure)
                                     json_size = len(json.dumps(filtered_departures))
@@ -193,11 +200,12 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: config_entries.Co
     offset = config_entry.data.get(CONF_OFFSET, DEFAULT_OFFSET)
     ignored_train_types = config_entry.data.get(CONF_IGNORED_TRAINTYPES, [])
     drop_late_trains = config_entry.data.get(CONF_DROP_LATE_TRAINS, False)
+    show_stopovers = config_entry.data.get(CONF_SHOW_STOPOVERS, False)
 
     coordinator = BVCoordinator(
         hass, start_station, destination_station, bike, only_regional, search_for_arrival,
         offset, next_departures, update_interval, hide_low_delay, ignored_train_types,
-        drop_late_trains
+        drop_late_trains, show_stopovers
     )
     await coordinator.async_config_entry_first_refresh()
 

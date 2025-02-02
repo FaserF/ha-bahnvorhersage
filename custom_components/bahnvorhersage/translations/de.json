@@ -6,6 +6,7 @@
                 "title": "Bahnvorhersage Konfiguration",
                 "description": "Bitte geben Sie die Verbindungsdetails an.",
                 "data": {
+                    "show_stopovers": "Zeige Zwischenstationen in Attribut Daten (nicht empfohlen, kann Leistungsprobleme verursachen)",
                     "start_station": "Startbahnhof",
                     "destination_station": "Zielbahnhof",
                     "search_for_arrival": "Nach Ankunftszeit suchen",
@@ -36,6 +37,7 @@
                 "title": "Optionen bearbeiten",
                 "description": "Passen Sie die Optionen für diese Verbindung an.",
                 "data": {
+                    "show_stopovers": "Zeige Zwischenstationen in Attribut Daten (nicht empfohlen, kann Leistungsprobleme verursachen)",
                     "search_for_arrival": "Nach Ankunftszeit suchen",
                     "only_regional": "Nur Regionalzüge verwenden",
                     "bike": "Fahrradmitnahme anzeigen",

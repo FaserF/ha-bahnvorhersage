@@ -46,6 +46,7 @@ Go to Configuration -> Integrations and click on "add integration". Then search 
 | `next_departures`          | int     | No       | 2       | Number of upcoming departures to show |
 | `update_interval`          | int     | No       | 3       | Update interval in seconds |
 | `hide_low_delay`           | boolean | No       | False   | Hide trains with low delays |
+| `show_stopovers`           | boolean | No       | False   | Shop stopover details (not recommended due to performance decreasement) |
 | `drop_late_trains`         | boolean | No       | False   | Exclude very late trains |
 | `search_for_arrival`       | boolean | No       | False   | Search for arrival times instead of departure times |
 | `only_regional`            | boolean | No       | False   | Only show regional trains |
