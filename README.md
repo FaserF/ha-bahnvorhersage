@@ -3,7 +3,7 @@
 # Bahnvorhersage Homeassistant Sensor
 The `bahnvorhersage` sensor will give you the prediction departure time of the next trains for the given start & destination combination, containing many more attribute informations.
 
-This integration works great side-by-side with [ha-db_infoscreen](https://github.com/FaserF/ha-db_infoscreen). 
+This integration works great side-by-side with [ha-db_infoscreen](https://github.com/FaserF/ha-db_infoscreen).
 This is a superior to [ha-deutschebahn](https://github.com/FaserF/ha-deutschebahn).
 
 <img src="https://gitlab.com/bahnvorhersage/bahnvorhersage_frontend/-/raw/main/public/img/icons/android-chrome-512x512.png" alt="Logo" width="300px">
@@ -41,8 +41,8 @@ Go to Configuration -> Integrations and click on "add integration". Then search 
 
 | Key                        | Type    | Required | Default | Description |
 |----------------------------|---------|----------|---------|-------------|
-| `start_station`            | string  | Yes      | -       | The starting station |
-| `destination_station`      | string  | Yes      | -       | The destination station |
+| `start_station`            | string  | Yes      | -       | The starting station* |
+| `destination_station`      | string  | Yes      | -       | The destination station* |
 | `next_departures`          | int     | No       | 2       | Number of upcoming departures to show |
 | `update_interval`          | int     | No       | 3       | Update interval in seconds |
 | `hide_low_delay`           | boolean | No       | False   | Hide trains with low delays |
@@ -52,6 +52,8 @@ Go to Configuration -> Integrations and click on "add integration". Then search 
 | `bike`                     | boolean | No       | False   | Show bike-friendly trains |
 | `offset`                   | string  | No       | 00:00   | Time offset for departure search |
 | `ignored_traintypes`       | list    | No       | []      | List of train types to ignore |
+
+*: Please check your station on [https://bahnvorhersage.de](https://bahnvorhersage.de) on how to write it. It is important to choose the correct way of spaces and/or "-" symbols. If your station is not supported there, I can also not support it here, but you could then give [ha-db_infoscreen](https://github.com/FaserF/ha-db_infoscreen) a try instead.
 
 ## Automation Examples for Home Assistant
 
@@ -70,7 +72,7 @@ action:
       title: "Train Forecast"
       message: >
         The next train from {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'start_station') }}
-        to {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'destination_station') }} 
+        to {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'destination_station') }}
         departs at {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['departure'] }}.
         Estimated arrival: {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['arrival'] }}.
 mode: single
@@ -92,7 +94,7 @@ action:
     data:
       title: "Train Delay Alert"
       message: >
-        The train from {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'start_station') }} 
+        The train from {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'start_station') }}
         to {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'destination_station') }} is expected to be delayed.
         Average predicted delay: {{ (state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['departureDelayPrediction']['predictions'] | sum / state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['departureDelayPrediction']['predictions'] | length) | round(1) }} minutes.
 mode: single
@@ -113,8 +115,8 @@ action:
     data:
       message: >
         The next train from {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'start_station') }}
-        to {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'destination_station') }} 
-        departs at {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['departure'] }} 
+        to {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'destination_station') }}
+        departs at {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['departure'] }}
         from platform {{ state_attr('sensor.start_to_destination_bahnvorhersage', 'next_departures')[0]['departurePlatform'] }}.
 mode: single
 ```
@@ -263,4 +265,4 @@ logger:
 You can then find the log in the HA settings -> System -> Logs -> Enter "bahnvorhersage" in the search bar -> "Load full logs"
 
 ## Thanks to
-The data is coming from the [bahnvorhersage.de/](https://bahnvorhersage.de/) website.
+The data is coming from the [bahnvorhersage.de](https://bahnvorhersage.de/) website.

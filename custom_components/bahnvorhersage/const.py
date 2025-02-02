@@ -21,7 +21,10 @@ CONF_BIKE = "bike"
 
 IGNORED_TRAINTYPES_OPTIONS = {
     "S": "Stadtbahn (S-Bahn)",
-    "N": "Regional Bahn (RB), Regional Express (RE)",
-    "F": "EuroCity (EC), Intercity Express (ICE), Intercity (IC)",
-    "D": "Bayrische Regionalbahn, Wiener Lokalbahn",
+    "RB": "Regional Bahn (RB)",
+    "RE": "Regional Express (RE)",
+    "EC": "EuroCity (EC)",
+    "ICE": "Intercity Express (ICE)",
+    "IC": "Intercity (IC)",
+    "BRB": "Bayrische Regionalbahn",
 }

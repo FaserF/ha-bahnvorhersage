@@ -144,10 +144,9 @@ class BVCoordinator(DataUpdateCoordinator):
                                 departure_seconds = (departure_time - datetime.now(departure_time.tzinfo)).total_seconds()
 
                                 # Check if the train class is in the ignored list
-                                train_classes = departure.get("productName", [])
-                                _LOGGER.debug("Departure train classes: %s", train_classes)
-                                if any(train_class in ignored_train_types for train_class in train_classes):
-                                    _LOGGER.debug("Ignoring departure due to train class: %s", train_classes)
+                                train_class = departure.get("productName", "")
+                                if train_class in ignored_train_types:
+                                    _LOGGER.debug("Ignoring departure due to train class: %s", train_class)
                                     continue
 
                                 # Calculate the time offset and only add departures that occur after the offset
