@@ -128,6 +128,12 @@ class BVCoordinator(DataUpdateCoordinator):
                                         departure["stop"].pop("longitude", None)
                                         departure["stop"].pop("type", None)
 
+                                    if "departureDelayPrediction" in departure:
+                                        departure["departureDelayPrediction"].pop("offset", None)
+
+                                    if "arrivalDelayPrediction" in departure:
+                                        departure["arrivalDelayPrediction"].pop("offset", None)
+
                                     if "line" in departure:
                                         departure["line"].pop("adminCode", None)
                                         if "operator" in departure["line"]:
