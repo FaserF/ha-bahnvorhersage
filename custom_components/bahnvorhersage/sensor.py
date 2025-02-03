@@ -42,18 +42,34 @@ class DBInfoSensor(SensorEntity):
         if self.coordinator.data:
             _LOGGER.debug("Data received for station: %s to destination: %s", self.start_station, self.destination_station)
             departure_time = self.coordinator.data[0].get("departure", "Unknown")
-            
-            if departure_time == "Unknown":
-                _LOGGER.warning("Departure time not found in data for station: %s to destination: %s", self.start_station, self.destination_station)
-            else:
-                _LOGGER.debug("Departure time found: %s", departure_time)
+            delay = self.coordinator.data[0].get("delay", 0)
+            planneddeparture_time = self.coordinator.data[0].get("plannedDeparture", "Unknown")
+
+            if delay != 0 and planneddeparture_time != "Unknown":
+                _LOGGER.debug("Delay time found: %s", delay)
                 try:
-                    departure_time = datetime.fromisoformat(departure_time)
-                    return departure_time.strftime("%H:%M")
+                    departure_time = datetime.fromisoformat(planneddeparture_time)
+                    departure_time = departure_time.strftime("%H:%M")
+                    if delay:
+                        departure_time_with_delay = f"{departure_time} +{delay}"
+                    else:
+                        departure_time_with_delay = departure_time
+                    return departure_time_with_delay
                 except ValueError:
                     _LOGGER.warning("Invalid departure time format: %s", departure_time)
                     return departure_time
-            
+            else:
+                if departure_time == "Unknown":
+                    _LOGGER.warning("Departure time not found in data for station: %s to destination: %s", self.start_station, self.destination_station)
+                else:
+                    _LOGGER.debug("Departure time found: %s", departure_time)
+                    try:
+                        departure_time = datetime.fromisoformat(departure_time)
+                        return departure_time.strftime("%H:%M")
+                    except ValueError:
+                        _LOGGER.warning("Invalid departure time format: %s", departure_time)
+                        return departure_time
+
             return departure_time
         else:
             _LOGGER.warning("No data received for station: %s to destination: %s", self.start_station, self.destination_station)

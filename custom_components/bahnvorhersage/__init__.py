@@ -177,6 +177,21 @@ class BVCoordinator(DataUpdateCoordinator):
 
                                     departure_seconds = (departure_time - datetime.now(departure_time.tzinfo)).total_seconds()
 
+                                    departure_time_str = departure.get("departure")
+                                    planned_departure_time_str = departure.get("plannedDeparture")
+
+                                    if departure_time_str and planned_departure_time_str:
+                                        try:
+                                            departure_time = parser.isoparse(departure_time_str)
+                                            planned_departure_time = parser.isoparse(planned_departure_time_str)
+                                            delay = (departure_time - planned_departure_time).total_seconds() // 60
+                                            departure["delay"] = int(delay)
+                                        except Exception as e:
+                                            _LOGGER.warning("Error parsing departure times for delay calculations: %s", e)
+                                            departure["delay"] = None
+                                    else:
+                                        departure["delay"] = None
+
                                     # Check if the train class is in the ignored list
                                     train_class = ""
                                     if "line" in departure and "productName" in departure["line"]:
