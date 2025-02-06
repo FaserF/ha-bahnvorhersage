@@ -1,5 +1,8 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-CUSTOM-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
+# Deprecation notice
+The backend API owner does not allow API fetching in intervals, therefore this integration needs to be shut down and wont work anymore. More details are explained [here](https://github.com/FaserF/ha-bahnvorhersage/issues/1). Please use [ha-db_infoscreen](https://github.com/FaserF/ha-db_infoscreen) instead.
+
 # Bahnvorhersage Homeassistant Sensor
 The `bahnvorhersage` sensor will give you the prediction departure time of the next trains for the given start & destination combination, containing many more attribute informations.
 
